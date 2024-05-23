@@ -1,21 +1,19 @@
-// Copyright The OpenTelemetry Authors
-// SPDX-License-Identifier: Apache-2.0
-
-package otlpconf // import "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc/internal/otlpconf"
+package otlploggrpc
 
 import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc/internal/conf"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc/internal/retry"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"testing"
+	"time"
 )
 
 const (
@@ -40,18 +38,6 @@ kbQ/kxzi9Ego0ZJdiXxkmv/C05QFddCW7Y0ZsJCLHGogQsYnWJBXUZOV
 -----END PRIVATE KEY-----
 `
 )
-
-// This is only for testing, as the package that is using this utility has its own newConfig function.
-func newConfig(options []Option) Config {
-	var c Config
-	for _, opt := range options {
-		c = opt.ApplyOption(c)
-	}
-
-	c = LoadConfig(c)
-
-	return c
-}
 
 func newTLSConf(cert, key []byte) (*tls.Config, error) {
 	cp := x509.NewCertPool()
@@ -96,39 +82,42 @@ func TestNewConfig(t *testing.T) {
 		name    string
 		options []Option
 		envars  map[string]string
-		want    Config
+		want    config
 		errs    []string
 	}{
 		{
 			name: "Defaults",
-			want: Config{
-				Endpoint: NewSetting(defaultEndpoint),
-				Path:     NewSetting(defaultPath),
-				Timeout:  NewSetting(defaultTimeout),
-				RetryCfg: NewSetting(defaultRetryCfg),
+			want: config{
+				endpoint: conf.NewSetting(defaultEndpoint),
+				path:     conf.NewSetting(defaultPath),
+				timeout:  conf.NewSetting(defaultTimeout),
+				retryCfg: conf.NewSetting(defaultRetryCfg),
 			},
 		},
 		{
 			name: "Options",
 			options: []Option{
-				WithEndpoint("test"),
-				WithURLPath("/path"),
 				WithInsecure(),
-				WithTLSClientConfig(tlsCfg),
+				WithEndpoint("test"),
+				WithEndpointURL("http://test:8080/path"),
+				WithReconnectionPeriod(time.Second),
 				WithCompression(GzipCompression),
 				WithHeaders(headers),
-				WithTimeout(time.Second),
-				WithRetry(rc),
+				WithTLSCredentials(credentials.NewTLS(tlsCfg)),
+				WithServiceConfig("{}"),
+				WithDialOption(grpc.WithUserAgent("test-agent")),
+				WithGRPCConn(&grpc.ClientConn{}),
+				WithTimeout(2 * time.Second),
+				WithRetry(RetryConfig(rc)),
 			},
-			want: Config{
-				Endpoint:    NewSetting("test"),
-				Path:        NewSetting("/path"),
-				Insecure:    NewSetting(true),
-				TLSCfg:      NewSetting(tlsCfg),
-				Headers:     NewSetting(headers),
-				Compression: NewSetting(GzipCompression),
-				Timeout:     NewSetting(time.Second),
-				RetryCfg:    NewSetting(rc),
+			want: config{
+				endpoint:    conf.NewSetting("test"),
+				path:        conf.NewSetting("/path"),
+				insecure:    conf.NewSetting(true),
+				headers:     conf.NewSetting(headers),
+				compression: conf.NewSetting(GzipCompression),
+				timeout:     conf.NewSetting(time.Second),
+				retryCfg:    conf.NewSetting(rc),
 			},
 		},
 		{
@@ -136,12 +125,12 @@ func TestNewConfig(t *testing.T) {
 			options: []Option{
 				WithEndpointURL("http://test:8080/path"),
 			},
-			want: Config{
-				Endpoint: NewSetting("test:8080"),
-				Path:     NewSetting("/path"),
-				Insecure: NewSetting(true),
-				Timeout:  NewSetting(defaultTimeout),
-				RetryCfg: NewSetting(defaultRetryCfg),
+			want: config{
+				endpoint: conf.NewSetting("test:8080"),
+				path:     conf.NewSetting("/path"),
+				insecure: conf.NewSetting(true),
+				timeout:  conf.NewSetting(defaultTimeout),
+				retryCfg: conf.NewSetting(defaultRetryCfg),
 			},
 		},
 		{
@@ -149,15 +138,14 @@ func TestNewConfig(t *testing.T) {
 			options: []Option{
 				WithEndpointURL("https://test:8080/path"),
 				WithEndpoint("not-test:9090"),
-				WithURLPath("/alt"),
 				WithInsecure(),
 			},
-			want: Config{
-				Endpoint: NewSetting("not-test:9090"),
-				Path:     NewSetting("/alt"),
-				Insecure: NewSetting(true),
-				Timeout:  NewSetting(defaultTimeout),
-				RetryCfg: NewSetting(defaultRetryCfg),
+			want: config{
+				endpoint: conf.NewSetting("not-test:9090"),
+				path:     conf.NewSetting("/path"),
+				insecure: conf.NewSetting(true),
+				timeout:  conf.NewSetting(defaultTimeout),
+				retryCfg: conf.NewSetting(defaultRetryCfg),
 			},
 		},
 		{
@@ -377,7 +365,7 @@ func TestNewConfig(t *testing.T) {
 	}
 }
 
-func assertTLSConfig(t *testing.T, want, got Setting[*tls.Config]) {
+func assertTLSConfig(t *testing.T, want, got conf.Setting[*tls.Config]) {
 	t.Helper()
 
 	assert.Equal(t, want.Set, got.Set, "setting Set")
