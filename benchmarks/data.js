@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1721250880671,
+  "lastUpdate": 1721251101381,
   "repoUrl": "https://github.com/XSAM/opentelemetry-go",
   "entries": {
     "Benchmarks": [
@@ -96,6 +96,54 @@ window.BENCHMARK_DATA = {
             "value": 16,
             "unit": "allocs/op",
             "extra": "906643 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sam@samxie.me",
+            "name": "Sam Xie",
+            "username": "XSAM"
+          },
+          "committer": {
+            "email": "sam@samxie.me",
+            "name": "Sam Xie",
+            "username": "XSAM"
+          },
+          "distinct": true,
+          "id": "9a82a4c09486c8febad70f581afb0ebfd44502f6",
+          "message": "Trigger CI 2",
+          "timestamp": "2024-07-17T14:17:27-07:00",
+          "tree_id": "67abdb8f7b3ad675a7ce846d863aa95f0581c21b",
+          "url": "https://github.com/XSAM/opentelemetry-go/commit/9a82a4c09486c8febad70f581afb0ebfd44502f6"
+        },
+        "date": 1721251100489,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkSpanWithAttributes_8/AlwaysSample",
+            "value": 1336,
+            "unit": "ns/op\t    1728 B/op\t      16 allocs/op",
+            "extra": "833530 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkSpanWithAttributes_8/AlwaysSample - ns/op",
+            "value": 1336,
+            "unit": "ns/op",
+            "extra": "833530 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkSpanWithAttributes_8/AlwaysSample - B/op",
+            "value": 1728,
+            "unit": "B/op",
+            "extra": "833530 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkSpanWithAttributes_8/AlwaysSample - allocs/op",
+            "value": 16,
+            "unit": "allocs/op",
+            "extra": "833530 times\n4 procs"
           }
         ]
       }
