@@ -10,7 +10,7 @@ env:
 jobs:
   benchmark:
     name: Benchmarks
-    runs-on: self-hosted
+    runs-on: github-benchmark-runner
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
