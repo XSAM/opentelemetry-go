@@ -40,4 +40,4 @@ jobs:
           check-latest: true
           cache-dependency-path: "**/go.sum"
       - name: Run the benchmarks
-        run: make benchmark-quick/${{matrix.shard}}
+        run: GOMEMLIMIT=4GiB make benchmark-quick/${{matrix.shard}}
