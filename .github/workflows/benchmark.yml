@@ -40,4 +40,8 @@ jobs:
           check-latest: true
           cache-dependency-path: "**/go.sum"
       - name: Run the benchmarks
-        run: GOMEMLIMIT=4GiB make benchmark-quick/${{matrix.shard}}
+        uses: CodSpeedHQ/action@v4.10.1
+        with:
+          mode: walltime
+          allow-empty: true
+          run: make benchmark-quick/${{matrix.shard}}
