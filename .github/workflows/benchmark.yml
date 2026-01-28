@@ -44,4 +44,6 @@ jobs:
         with:
           mode: walltime
           allow-empty: true
+          # CodSpeed overrides the default benchtime if we don't explicitly specify it.
+          # Having this would avoid running benchmark for more than 1 hour.
           run: make benchmark/${{matrix.shard}} ARGS=-benchtime=1s
