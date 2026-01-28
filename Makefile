@@ -182,11 +182,7 @@ test-coverage: $(GOCOVMERGE)
 	done; \
 	$(GOCOVMERGE) $$(find . -name coverage.out) > coverage.txt
 
-.PHONY: benchmark benchmark-quick
-benchmark-quick: ARGS=-benchtime=10ms
-benchmark-quick: $(OTEL_GO_MOD_DIRS:%=benchmark-quick/%)
-benchmark-quick/%: benchmark/%
-	@:
+.PHONY: benchmark
 benchmark: $(OTEL_GO_MOD_DIRS:%=benchmark/%)
 benchmark/%:
 	@echo "cd $* && $(GO) test -run=xxxxxMatchNothingxxxxx -bench=. $(ARGS) ./..." \

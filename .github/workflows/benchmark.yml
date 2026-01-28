@@ -44,4 +44,4 @@ jobs:
         with:
           mode: walltime
           allow-empty: true
-          run: make benchmark-quick/${{matrix.shard}}
+          run: make benchmark/${{matrix.shard}} ARGS=-benchtime=10ms
